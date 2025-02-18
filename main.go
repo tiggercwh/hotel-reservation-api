@@ -1,16 +1,18 @@
 package main
 
 import (
-	"fmt"
-	"log"
-	"net/http"
+	"github.com/gofiber/fiber/v2"
+	"github.com/tiggercwh/hotel-reservation-api/api"
 )
 
 func main() {
-	http.HandleFunc("/", handler)
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	app := fiber.New()
+	apiv1 := app.Group("/api/v1")
+	apiv1.Get("user", api.HandleListUsers)
+	apiv1.Get("user/:id", api.HandleGetUser)
+	app.Listen(":3000")
 }
 
-func handler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprint(w, "Hello, World!")
+func handlerFoo(c *fiber.Ctx) error {
+	return c.JSON(map[string]string{"msg": "working just fine!"})
 }
