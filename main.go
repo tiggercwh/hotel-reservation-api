@@ -6,6 +6,7 @@ import (
 	"os"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/joho/godotenv"
 	"github.com/tiggercwh/hotel-reservation-api/api"
 	"github.com/tiggercwh/hotel-reservation-api/db"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -20,8 +21,17 @@ func main() {
 	}
 
 	var (
-		userStore   = db.NewMongoUserStore(client)
-		userHandler = api.NewUserHandler(userStore)
+		hotelStore = db.NewMongoHotelStore(client)
+		userStore  = db.NewMongoUserStore(client)
+		roomStore  = db.NewMongoRoomStore(client, hotelStore)
+		store      = &db.Store{
+			Hotel: hotelStore,
+			Room:  roomStore,
+			User:  userStore,
+			// Booking: bookingStore,
+		}
+		hotelHandler = api.NewHotelHandler(store)
+		userHandler  = api.NewUserHandler(userStore)
 	)
 	app := fiber.New()
 	apiv1 := app.Group("/api/v1")
@@ -33,5 +43,17 @@ func main() {
 	apiv1.Post("/user", userHandler.HandlePostUser)
 	apiv1.Get("/user", userHandler.HandleGetUsers)
 
+	apiv1.Get("/hotel", hotelHandler.HandleGetHotels)
+	apiv1.Get("/hotel/:id", hotelHandler.HandleGetHotel)
+	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetHotelRooms)
+	apiv1.Post("/hotel", hotelHandler.HandlePostHotel)
+	apiv1.Delete("/hotel/:id", hotelHandler.HandleDeleteHotel)
+
 	app.Listen(":3000")
+}
+
+func init() {
+	if err := godotenv.Load(); err != nil {
+		log.Fatal(err)
+	}
 }
