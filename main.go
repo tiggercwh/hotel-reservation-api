@@ -21,17 +21,20 @@ func main() {
 	}
 
 	var (
-		hotelStore = db.NewMongoHotelStore(client)
-		userStore  = db.NewMongoUserStore(client)
-		roomStore  = db.NewMongoRoomStore(client, hotelStore)
-		store      = &db.Store{
+		hotelStore   = db.NewMongoHotelStore(client)
+		userStore    = db.NewMongoUserStore(client)
+		roomStore    = db.NewMongoRoomStore(client, hotelStore)
+		bookingStore = db.NewBookingStore(client)
+		store        = &db.Store{
 			Hotel: hotelStore,
 			Room:  roomStore,
 			User:  userStore,
 			// Booking: bookingStore,
 		}
-		hotelHandler = api.NewHotelHandler(store)
-		userHandler  = api.NewUserHandler(userStore)
+		hotelHandler   = api.NewHotelHandler(store)
+		userHandler    = api.NewUserHandler(userStore)
+		roomHandler    = api.NewRoomHandler(store)
+		bookingHandler = api.NewBookingHandler(bookingStore)
 	)
 	app := fiber.New()
 	apiv1 := app.Group("/api/v1")
@@ -48,6 +51,15 @@ func main() {
 	apiv1.Get("/hotel/:id/rooms", hotelHandler.HandleGetHotelRooms)
 	apiv1.Post("/hotel", hotelHandler.HandlePostHotel)
 	apiv1.Delete("/hotel/:id", hotelHandler.HandleDeleteHotel)
+	// rooms handlers
+	apiv1.Get("/room", roomHandler.HandleGetRooms)
+	apiv1.Post("/room/:id/book", roomHandler.HandleBookRoom)
+
+	// bookings handlers
+	apiv1.Get("/booking/:id", bookingHandler.HandleGetBooking)
+	apiv1.Get("/booking/:id/cancel", bookingHandler.HandleCancelBooking)
+	// admin handlers
+	// admin.Get("/booking", bookingHandler.HandleGetBookings)
 
 	app.Listen(":3000")
 }

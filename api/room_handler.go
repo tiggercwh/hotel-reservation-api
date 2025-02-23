@@ -1,12 +1,16 @@
 package api
 
 import (
+	"context"
 	"fmt"
+	"net/http"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/tiggercwh/hotel-reservation-api/db"
+	"github.com/tiggercwh/hotel-reservation-api/types"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 )
 
 type BookRoomParams struct {
@@ -39,4 +43,67 @@ func (h *RoomHandler) HandleGetRooms(c *fiber.Ctx) error {
 		return err
 	}
 	return c.JSON(rooms)
+}
+
+func (h *RoomHandler) HandleBookRoom(c *fiber.Ctx) error {
+	var (
+		bookingParams BookRoomParams
+		roomId        = c.Params("id")
+	)
+
+	err := c.BodyParser(&bookingParams)
+	if err != nil {
+		return err
+	}
+	err = bookingParams.validate()
+	if err != nil {
+		return err
+	}
+	user, _ := getAuthUser(c)
+	roomOid, err := primitive.ObjectIDFromHex(roomId)
+	if err != nil {
+		return err
+	}
+
+	avai, err := h.isRoomAvailableForBooking(c.Context(), roomOid, bookingParams)
+
+	if err != nil {
+		return err
+	}
+	if !avai {
+		return c.Status(http.StatusBadRequest).JSON(genericResp{
+			Type: "error",
+			Msg:  fmt.Sprintf("room %s already booked", c.Params("id")),
+		})
+	}
+
+	booking, err := h.store.Booking.InsertBooking(c.Context(), &types.Booking{
+		UserID:     user.ID,
+		RoomID:     roomOid,
+		NumPersons: bookingParams.NumPersons,
+		FromDate:   bookingParams.FromDate,
+		TillDate:   bookingParams.TillDate,
+	})
+	if err != nil {
+		return err
+	}
+	return c.JSON(booking)
+}
+
+func (h *RoomHandler) isRoomAvailableForBooking(ctx context.Context, roomID primitive.ObjectID, params BookRoomParams) (bool, error) {
+	where := bson.M{
+		"roomID": roomID,
+		"fromDate": bson.M{
+			"$gte": params.FromDate,
+		},
+		"tillDate": bson.M{
+			"$lte": params.TillDate,
+		},
+	}
+	bookings, err := h.store.Booking.GetBookings(ctx, where)
+	if err != nil {
+		return false, err
+	}
+	ok := len(bookings) == 0
+	return ok, nil
 }
