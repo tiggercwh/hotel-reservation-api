@@ -31,13 +31,17 @@ func main() {
 			User:  userStore,
 			// Booking: bookingStore,
 		}
+		authHandler    = api.NewAuthHandler(userStore)
 		hotelHandler   = api.NewHotelHandler(store)
 		userHandler    = api.NewUserHandler(userStore)
 		roomHandler    = api.NewRoomHandler(store)
 		bookingHandler = api.NewBookingHandler(bookingStore)
+		app            = fiber.New()
+		auth           = app.Group("/api")
+		apiv1          = app.Group("/api/v1", api.JWTAuthentication(userStore))
 	)
-	app := fiber.New()
-	apiv1 := app.Group("/api/v1")
+
+	auth.Post("/auth", authHandler.HandleAuthenticate)
 
 	// user handlers
 	apiv1.Get("/user/:id", userHandler.HandleGetUser)
