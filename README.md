@@ -4,11 +4,14 @@ This a demonstartion of a RESTful API for hotel room booking and management syst
 
 ## 📋 Features
 
-- User authentication and authorization using JWT
-- Hotel and room management (CRUD operations)
-- Room booking and reservation system
-- Admin dashboard for managing bookings
-- Database seeding and migration scripts
+_Legend_: ✅ Implemented | 🚧 In Progress | ❌ Not Started
+
+- ✅ User authentication and authorization using JWT
+- ✅ Hotel management (CRUD operations)
+- ✅ Room management and booking system
+- 🚧 Admin dashboard (partially implemented)
+- ❌ Database seeding and migration scripts
+  [➡️ Jump to Current Progress section](#-current-progress)
 
 ## 🚀 Getting Started
 
@@ -82,3 +85,43 @@ The project includes a Makefile building on top of go default commands:
 - **Database**: MongoDB
 - **Authentication**: JWT
 - **Containerization**: Docker
+
+## 🚧 Current Progress
+
+The project is still in development. Here's what's implemented and how you can test it:
+
+### Implemented Features
+
+- **User Management**: Full CRUD operations for users
+- **Hotel Management**: Create, read, and delete hotels
+- **Room Management**: View and book available rooms
+- **Booking System**: Create and cancel bookings
+
+### Testing the API
+
+You can test the API using tools like `curl` or Postman. Here are some example endpoints:
+
+1. **User Registration**
+
+   ```bash
+   curl -X POST http://localhost:3000/api/v1/user -H "Content-Type: application/json" -d '{"email":"test@example.com", "password":"password123"}'
+   ```
+
+2. **User Authentication**
+
+   ```bash
+   curl -X POST http://localhost:3000/api/auth -H "Content-Type: application/json" -d '{"email":"test@example.com", "password":"password123"}'
+   ```
+
+   (Use the returned JWT token in the `Authorization: Bearer <token>` header for subsequent requests)
+
+3. **View Available Hotels**
+
+   ```bash
+   curl http://localhost:3000/api/v1/hotel
+   ```
+
+4. **Book a Room**
+   ```bash
+   curl -X POST http://localhost:3000/api/v1/room/room-id/book -H "Authorization: Bearer <token>" -H "Content-Type: application/json" -d '{"from":"2025-08-01", "to":"2025-08-05"}'
+   ```
