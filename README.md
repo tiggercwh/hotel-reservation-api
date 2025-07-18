@@ -4,14 +4,15 @@ This a demonstartion of a RESTful API for hotel room booking and management syst
 
 ## 📋 Features
 
-_Legend_: ✅ Implemented | 🚧 In Progress | ❌ Not Started
+✅ Implemented | 🚧 In Progress | ❌ Not Started
 
 - ✅ User authentication and authorization using JWT
 - ✅ Hotel management (CRUD operations)
 - ✅ Room management and booking system
 - 🚧 Admin dashboard (partially implemented)
 - ❌ Database seeding and migration scripts
-  [➡️ Jump to Current Progress section](#-current-progress)
+
+[➡️ Jump to Current Progress section](#-current-progress)
 
 ## 🚀 Getting Started
 
